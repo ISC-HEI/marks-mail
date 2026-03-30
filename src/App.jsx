@@ -114,6 +114,14 @@ function TagPill({ tag, onClick, title }) {
 /* ── template field ────────────────────────────────────────── */
 function TemplateField({ label, value, onChange, multiline, id }) {
   const ref = useRef(null);
+
+  // Moves the scrollbar (elevator) to the very beginning when the page opens
+  useEffect(() => {
+    if (multiline && ref.current) {
+      ref.current.scrollTop = 0;
+    }
+  }, [multiline]);
+
   const insert = (tag) => {
     const el = ref.current;
     if (!el) return;
@@ -125,6 +133,7 @@ function TemplateField({ label, value, onChange, multiline, id }) {
       el.setSelectionRange(s + tag.length, s + tag.length);
     });
   };
+
   const props = {
     ref,
     id,
@@ -137,10 +146,11 @@ function TemplateField({ label, value, onChange, multiline, id }) {
       fontFamily: multiline ? "var(--mono)" : "var(--body)",
       fontSize: multiline ? 12.5 : 13,
       ...(multiline
-        ? { minHeight: 150, resize: "vertical", lineHeight: 1.65 }
+        ? { minHeight: 280, resize: "vertical", lineHeight: 1.65 }
         : {}),
     },
   };
+
   return (
     <div style={{ marginBottom: 14 }}>
       <div
@@ -720,11 +730,13 @@ export default function App() {
             Coller · Vérifier · Envoyer
           </p>
         </div>
-        <img
-          src={dark ? LOGO_WHITE : LOGO_BLACK}
-          alt="ISC"
-          style={{ height: 32, opacity: 0.85 }}
-        />
+        <a href="https://www.hevs.ch/isc" target="_blank" rel="noopener noreferrer">
+          <img
+            src={dark ? LOGO_WHITE : LOGO_BLACK}
+            alt="ISC"
+            style={{ height: 38, opacity: 1, cursor: "pointer" }}
+          />
+        </a>
       </div>
 
       {view === "edit" ? (
@@ -819,26 +831,7 @@ export default function App() {
                 padding: 16,
                 marginTop: 8,
               }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--muted)",
-                  marginBottom: 12,
-                  lineHeight: 1.5,
-                }}
-              >
-                <code
-                  style={{
-                    background: "var(--tag-bg)",
-                    padding: "1px 5px",
-                    borderRadius: 3,
-                  }}
-                >
-                  {"{civilite}"}
-                </code>{" "}
-                → <b>Cher</b> (M), <b>Chère</b> (F) ou <b>Bonjour</b> (vide)
-              </div>
+            >              
               <TemplateField
                 id="subj"
                 label="Objet"
