@@ -30,10 +30,10 @@ const PLACEHOLDERS = [
   { tag: "{module}" },
 ];
 
-const DEFAULT_SUBJECT = "Note — {module}";
-const DEFAULT_BODY = `{civilite},
+const DEFAULT_SUBJECT = "[ISC] Note du {module}";
+const DEFAULT_BODY = `{civilite} {nom},
 
-Vous trouverez ci-dessous votre note pour le module {module} :
+Vous trouverez ci-dessous votre note pour notre examen oral du module {module} :
 
   Étudiant·e : {prenom} {nom}
   Note :       {note}
@@ -46,8 +46,8 @@ Pierre-André`;
 /* ── helpers ───────────────────────────────────────────────── */
 function civilite(g) {
   const v = (g || "").trim().toUpperCase();
-  if (v === "F") return "Chère";
-  if (v === "M") return "Cher";
+  if (v === "F") return "Chère Madame";
+  if (v === "M") return "Cher Monsieur";
   return "Bonjour";
 }
 
@@ -628,7 +628,7 @@ export default function App() {
               letterSpacing: "-.03em",
             }}
           >
-            Grade Mailer
+            ISC Grade Mailer
           </h1>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--muted)" }}>
             Coller · Vérifier · Envoyer
@@ -666,12 +666,12 @@ export default function App() {
         <>
           <div style={{ marginBottom: 16 }}>
             <label htmlFor="mod" style={labelSm}>
-              Module
+              Module ou unité d'enseignement
             </label>
             <input
               id="mod"
               type="text"
-              placeholder="ex. Systèmes d'exploitation"
+              placeholder="ex. 101.1 Programmation impérative"
               value={module}
               onChange={(e) => setModule(e.target.value)}
               style={{ ...inputBase, width: "100%", boxSizing: "border-box" }}
@@ -688,7 +688,7 @@ export default function App() {
               }}
             >
               <label style={labelSm}>
-                Données étudiants{" "}
+                Données étudiant·es{" "}
                 <span style={{ fontWeight: 400, color: "var(--muted)" }}>
                   — collez depuis Excel (la colonne M/F est optionnelle)
                 </span>
@@ -907,7 +907,7 @@ export default function App() {
           letterSpacing: ".02em",
         }}
       >
-        made with{" "}
+        Made with{" "}
         <span
           style={{
             display: "inline-block",
