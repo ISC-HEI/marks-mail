@@ -115,7 +115,6 @@ function TagPill({ tag, onClick, title }) {
 function TemplateField({ label, value, onChange, multiline, id }) {
   const ref = useRef(null);
 
-  // Moves the scrollbar (elevator) to the very beginning when the page opens
   useEffect(() => {
     if (multiline && ref.current) {
       ref.current.scrollTop = 0;
@@ -133,7 +132,6 @@ function TemplateField({ label, value, onChange, multiline, id }) {
       el.setSelectionRange(s + tag.length, s + tag.length);
     });
   };
-
   const props = {
     ref,
     id,
@@ -146,11 +144,10 @@ function TemplateField({ label, value, onChange, multiline, id }) {
       fontFamily: multiline ? "var(--mono)" : "var(--body)",
       fontSize: multiline ? 12.5 : 13,
       ...(multiline
-        ? { minHeight: 280, resize: "vertical", lineHeight: 1.65 }
+        ? { minHeight: 320, resize: "vertical", lineHeight: 1.65 }
         : {}),
     },
   };
-
   return (
     <div style={{ marginBottom: 14 }}>
       <div
@@ -584,6 +581,7 @@ export default function App() {
   const [sendList, setSendList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(true);
+  const [showPopupHelp, setShowPopupHelp] = useState(false);
 
   const withEmail = useMemo(() => rows.filter(hasEmail), [rows]);
   const complete = useMemo(() => withEmail.filter(hasNote), [withEmail]);
@@ -598,6 +596,13 @@ export default function App() {
   );
 
   const tryGo = () => {
+    // Vérifie si le module est vide avant de continuer
+    if (!module || !module.trim()) {
+      alert("Veuillez saisir le nom du module ou de l'unité d'enseignement avant de continuer.");
+      document.getElementById("mod")?.focus();
+      return;
+    }
+    
     if (missingNote.length > 0) {
       setShowConfirm(true);
       return;
@@ -630,16 +635,20 @@ export default function App() {
   );
 
   const bulkSend = () => {
+    setShowPopupHelp(true);
     pending.forEach((s, i) => {
       setTimeout(() => {
         const fs = fill(subject, s, module);
         const fb = fill(body, s, module);
-        window.open(
-          `mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent(fs)}&body=${encodeURIComponent(fb)}`,
-          "_blank"
-        );
+        
+        // Triggers anchor element clicks to open emails sequentially
+        const a = document.createElement('a');
+        a.href = `mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent(fs)}&body=${encodeURIComponent(fb)}`;
+        a.target = '_blank';
+        a.click();
+        
         markSent(sendList.indexOf(s));
-      }, i * 800);
+      }, i * 2000); // Trigger an email open every 2 seconds
     });
   };
 
@@ -743,7 +752,7 @@ export default function App() {
         <>
           <div style={{ marginBottom: 16 }}>
             <label htmlFor="mod" style={labelSm}>
-              Module ou unité d'enseignement
+              Module ou unité d'enseignement <span style={{ color: "var(--warn-fg)" }}>*</span>
             </label>
             <input
               id="mod"
@@ -767,7 +776,10 @@ export default function App() {
               <label style={labelSm}>
                 Données étudiant·es{" "}
                 <span style={{ fontWeight: 400, color: "var(--muted)" }}>
-                  — collez depuis Excel (la colonne M/F est optionnelle)
+                  — collez depuis Excel (la colonne M/F est optionnelle).
+                  <p style={{ fontSize: 8 }}>
+                    Si vous n'avez pas de notes pour certain·es étudiant·es, vous pouvez laisser la cellule correspondante vide et les messages ne seront pas envoyés pour ces personnes.
+                  </p>
                 </span>
               </label>
               <button
@@ -888,6 +900,45 @@ export default function App() {
         </>
       ) : (
         <>
+          {showPopupHelp && (
+            <div style={{
+              background: "var(--warn-bg)",
+              color: "var(--warn-fg)",
+              border: "1px solid var(--warn-fg)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              marginBottom: 16,
+              fontSize: 13,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+              boxShadow: "0 2px 8px rgba(0,0,0,.05)"
+            }}>
+              <span style={{ fontSize: 20, lineHeight: 1 }}>💡</span>
+              <div style={{ flex: 1, lineHeight: 1.5 }}>
+                <b style={{ display: "block", marginBottom: 2 }}>Note sur l'envoi groupé</b>
+                Si un seul email s'ouvre, votre navigateur bloque probablement les suivants. 
+                Regardez l'extrémité droite de la barre d'adresse (en haut du navigateur) : 
+                cliquez sur l'icône de pop-up bloqué 🚫 et sélectionnez <b>"Toujours autoriser..."</b>.
+              </div>
+              <button 
+                onClick={() => setShowPopupHelp(false)} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: 'var(--warn-fg)', 
+                  cursor: 'pointer', 
+                  fontSize: 16,
+                  padding: "0 4px",
+                  opacity: 0.7
+                }}
+                title="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <div
             style={{
               display: "flex",
@@ -979,12 +1030,12 @@ export default function App() {
             display: "inline-block",
             animation: "pulse 1.2s ease-in-out infinite",
             color: "#DD0069",
-            fontSize: 13,
+            fontSize: 9,
           }}
         >
-          ♥
+          ❤️
         </span>{" "}
-        — ISC 2026
+        — mui 2026
         <br />
         <span style={{ fontSize: 10, opacity: 0.6 }}>
           v54a3a5e · 30.03.2026
