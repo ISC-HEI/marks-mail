@@ -40,7 +40,7 @@ Vous trouverez ci-dessous votre note pour l'examen oral du module {module} :
 
 Si vous avez des questions, bien entendu n'hésitez pas à me contacter par email ou à en discuter lors de notre prochaine séance de cours ou de travaux pratiques.
 
-Cordialement,
+Avec mes respectueuses salutations,
 Pierre-André Mudry`;
 
 /* ── helpers ───────────────────────────────────────────────── */
