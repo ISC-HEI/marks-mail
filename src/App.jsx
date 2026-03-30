@@ -33,15 +33,15 @@ const PLACEHOLDERS = [
 const DEFAULT_SUBJECT = "[ISC] Note de {module}";
 const DEFAULT_BODY = `{civilite} {nom},
 
-Vous trouverez ci-dessous votre note pour notre examen oral du module {module} :
+Vous trouverez ci-dessous votre note pour l'examen oral du module {module} :
 
   Étudiant·e : {prenom} {nom}
   Note :       {note}
 
-Si vous avez des questions, n'hésitez pas à me contacter.
+Si vous avez des questions, bien entendu n'hésitez pas à me contacter par email ou à en discuter lors de notre prochaine séance de cours ou de travaux pratiques.
 
 Cordialement,
-Pierre-André`;
+Pierre-André Mudry`;
 
 /* ── helpers ───────────────────────────────────────────────── */
 function civilite(g) {
