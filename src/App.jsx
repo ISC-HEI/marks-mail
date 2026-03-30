@@ -90,12 +90,24 @@ function useDark() {
   return [dark, () => setOverride((p) => (p !== null ? !p : !system))];
 }
 
+/* ── tooltip ───────────────────────────────────────────────── */
+function Tip({ text, children }) {
+  return (
+    <span className="tip-wrap">
+      {children}
+      <span className="tip-text">{text}</span>
+    </span>
+  );
+}
+
 /* ── tag pill ──────────────────────────────────────────────── */
 function TagPill({ tag, onClick, title }) {
   return (
-    <button onClick={onClick} style={tagPillStyle} title={title}>
-      {tag}
-    </button>
+    <Tip text={title}>
+      <button onClick={onClick} style={tagPillStyle}>
+        {tag}
+      </button>
+    </Tip>
   );
 }
 
@@ -248,12 +260,11 @@ function SpreadsheetTable({ rows, setRows }) {
             justifyContent: "center",
             zIndex: 2,
             pointerEvents: "none",
-            background: "var(--card)",
-            opacity: 0.55,
+            background: "color-mix(in srgb, var(--card) 45%, transparent)",
             borderRadius: 8,
           }}
         >
-          <span style={{ fontSize: 36, marginBottom: 8, animation: "bounce 1.5s ease-in-out infinite" }}>📋</span>
+          <span style={{ fontSize: 36, marginBottom: 8, animation: "bounce 1.5s ease-in-out infinite", filter: "drop-shadow(0 2px 4px rgba(0,0,0,.15))" }}>📋</span>
           <span style={{ fontSize: 14, fontWeight: 600, color: "var(--fg)" }}>Collez vos données depuis Excel</span>
           <span style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>Ctrl+V / ⌘V dans la première cellule</span>
         </div>
@@ -562,6 +573,7 @@ export default function App() {
   const [view, setView] = useState("edit");
   const [sendList, setSendList] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(true);
 
   const withEmail = useMemo(() => rows.filter(hasEmail), [rows]);
   const complete = useMemo(() => withEmail.filter(hasNote), [withEmail]);
@@ -623,21 +635,25 @@ export default function App() {
 
   const theme = dark ? darkTheme : lightTheme;
 
-  useEffect(() => {
-    document.body.style.background = dark ? darkTheme['--bg'] : lightTheme['--bg'];
-  }, [dark]);
-
   return (
     <div style={{ ...rootBase, ...theme }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;600;700&display=swap');
         * { box-sizing: border-box; transition: background .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease; }
-        body { background: var(--bg, #f6f7f8); transition: background .3s ease; }
+        html, body, #root { background: ${dark ? darkTheme['--bg'] : lightTheme['--bg']}; transition: background .3s ease; }
         input::placeholder, textarea::placeholder { color: var(--muted); opacity: .5; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
         @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        details[open] > div { animation: slideDown .25s ease-out; }
+        @keyframes slideDown { from { opacity: 0; max-height: 0; transform: translateY(-8px); } to { opacity: 1; max-height: 600px; transform: translateY(0); } }
+        .tmpl-content { overflow: hidden; transition: max-height .3s ease, opacity .3s ease, transform .3s ease; }
+        .tmpl-open { max-height: 600px; opacity: 1; transform: translateY(0); }
+        .tmpl-closed { max-height: 0; opacity: 0; transform: translateY(-8px); }
+        .tip-wrap { position: relative; display: inline-flex; }
+        .tip-text { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%) scale(.92); opacity: 0; pointer-events: none; white-space: nowrap; font-size: 11px; font-weight: 500; font-family: var(--body); padding: 4px 10px; border-radius: 5px; background: var(--fg); color: var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,.18); transition: opacity .12s, transform .12s; z-index: 20; }
+        .tip-wrap:hover .tip-text { opacity: 1; transform: translateX(-50%) scale(1); }
       `}</style>
 
       {showConfirm && (
@@ -681,7 +697,7 @@ export default function App() {
       {/* header */}
       <div
         style={{
-          borderBottom: "2px solid var(--fg)",
+          borderBottom: "1px solid var(--rule)",
           paddingBottom: 10,
           marginBottom: 24,
           display: "flex",
@@ -779,8 +795,9 @@ export default function App() {
             )}
           </div>
 
-          <details open style={{ marginBottom: 20 }}>
-            <summary
+          <div style={{ marginBottom: 20 }}>
+            <div
+              onClick={() => setTemplateOpen(p => !p)}
               style={{
                 cursor: "pointer",
                 fontSize: 12,
@@ -790,9 +807,10 @@ export default function App() {
                 color: "var(--muted)",
                 userSelect: "none",
               }}
-            >
-              Template email ▾
-            </summary>
+            >              
+              <span>Template email {templateOpen ? "▴" : "▾"}</span>             
+            </div>
+            <div className={`tmpl-content ${templateOpen ? 'tmpl-open' : 'tmpl-closed'}`}>
             <div
               style={{
                 background: "var(--card)",
@@ -835,7 +853,8 @@ export default function App() {
                 multiline
               />
             </div>
-          </details>
+            </div>
+          </div>
 
           <div
             style={{
