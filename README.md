@@ -1,46 +1,55 @@
-# Grade Mailer — ISC
+<p align="right">
+  <img src="https://github.com/ISC-HEI/isc_logos/blob/ab8c41c12930c787f590183baa229a22709c81f9/black/ISC%20Logo%20inline%20black%20v3%20-%20large.webp?raw=true" align="right" alt="ISC Logo" height="50"/>
+</p>
 
-Outil interne pour envoyer les notes individuelles aux étudiants par email.
+![GitHub Release](https://img.shields.io/github/v/release/ISC-HEI/isc-marks-mail?include_prereleases)
+![License](https://img.shields.io/badge/license-GPL--3.0-brightgreen")
 
-## Lancement rapide
+## 👉 [Use the application](https://isc-hei.github.io/marks-mail/)
+
+# ISC Grade Mailer
+
+Internal tool for sending individual grades to students by email, using your own email application.
+
+## Quick Start
 
 ```bash
 chmod +x dev.sh
 ./dev.sh
 ```
 
-Ou manuellement :
+Or manually:
 
 ```bash
 bun install
 bun run dev
 ```
 
-Ouvre ensuite http://localhost:5173
+Then open http://localhost:5173
 
-## Utilisation
+## Usage
 
-1. Renseigner le nom du module
-2. Coller les colonnes depuis Excel : **M/F | Nom | Prénom | Email | Note**
-   - La colonne M/F est optionnelle — sans elle, coller directement Nom | Prénom | Email | Note en partant de la 2ᵉ colonne
-3. Personnaliser le template email (objet + corps) avec les tags `{civilite}`, `{prenom}`, `{nom}`, `{note}`, `{module}`
-4. Cliquer **Vérifier & envoyer** pour prévisualiser chaque email
-5. Envoyer un par un (✉) ou tout d'un coup
+1. Enter the module name
+2. Paste columns from Excel: **M/F | Last Name | First Name | Email | Grade**
+   - The M/F column is optional — without it, paste Last Name | First Name | Email | Grade starting from the 2nd column
+3. Customize the email template (subject + body) using tags `{civilite}`, `{prenom}`, `{nom}`, `{note}`, `{module}`
+4. Click **Verify & send** to preview each email
+5. Send one by one (✉) or all at once
 
-## Déploiement GitHub Pages
+## GitHub Pages Deployment
 
-1. Dans `vite.config.js`, changer `base` :
+1. In `vite.config.js`, set `base`:
    ```js
-   base: '/nom-du-repo/'
+   base: '/repo-name/'
    ```
 
-2. Déployer :
+2. Deploy:
    ```bash
    bun run deploy
    ```
 
-3. Dans GitHub → Settings → Pages → Source : branche `gh-pages`
+3. In GitHub → Settings → Pages → Source: select branch `gh-pages`
 
 ---
 
-*made with ♥ — ISC 2026*
+*Made with ♥ by mui, 2026*

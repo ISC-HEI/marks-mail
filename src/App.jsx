@@ -5,11 +5,11 @@ const LOGO_WHITE = "./ISC_Logo_V3_-_white.svg";
 
 /* ── table columns — genre first, optional ─────────────────── */
 const COLS = [
-  { key: "genre", label: "M/F", width: "7%" },
-  { key: "nom", label: "Nom", width: "19%" },
-  { key: "prenom", label: "Prénom", width: "19%" },
-  { key: "email", label: "Email", width: "33%" },
-  { key: "note", label: "Note", width: "10%" },
+  { key: "genre", label: "M/F", width: 40 },
+  { key: "nom", label: "Nom", width: "auto" },
+  { key: "prenom", label: "Prénom", width: "auto" },
+  { key: "email", label: "Email", width: "auto" },
+  { key: "note", label: "Note", width: 55 },
 ];
 const EMPTY_ROW = () => ({
   genre: "",
@@ -22,15 +22,15 @@ const EMPTY_ROW = () => ({
 const INITIAL_ROWS = 15;
 
 const PLACEHOLDERS = [
-  { tag: "{civilite}" },
-  { tag: "{prenom}" },
-  { tag: "{nom}" },
-  { tag: "{email}" },
-  { tag: "{note}" },
-  { tag: "{module}" },
+  { tag: "{civilite}", help: "Cher Monsieur / Chère Madame / Bonjour (selon M/F)" },
+  { tag: "{prenom}", help: "Prénom de l'étudiant·e" },
+  { tag: "{nom}", help: "Nom de l'étudiant·e" },
+  { tag: "{email}", help: "Adresse email de l'étudiant·e" },
+  { tag: "{note}", help: "Note obtenue par l'étudiant·e" },
+  { tag: "{module}", help: "Nom du module ou unité d'enseignement" },
 ];
 
-const DEFAULT_SUBJECT = "[ISC] Note du {module}";
+const DEFAULT_SUBJECT = "[ISC] Note de {module}";
 const DEFAULT_BODY = `{civilite} {nom},
 
 Vous trouverez ci-dessous votre note pour notre examen oral du module {module} :
@@ -76,22 +76,24 @@ function isEmpty(r) {
 
 /* ── dark mode ─────────────────────────────────────────────── */
 function useDark() {
-  const [d, setD] = useState(
+  const [override, setOverride] = useState(null);
+  const [system, setSystem] = useState(
     () => window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false
   );
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const h = (e) => setD(e.matches);
+    const h = (e) => setSystem(e.matches);
     mq.addEventListener("change", h);
     return () => mq.removeEventListener("change", h);
   }, []);
-  return [d, () => setD((p) => !p)];
+  const dark = override !== null ? override : system;
+  return [dark, () => setOverride((p) => (p !== null ? !p : !system))];
 }
 
 /* ── tag pill ──────────────────────────────────────────────── */
-function TagPill({ tag, onClick }) {
+function TagPill({ tag, onClick, title }) {
   return (
-    <button onClick={onClick} style={tagPillStyle}>
+    <button onClick={onClick} style={tagPillStyle} title={title}>
       {tag}
     </button>
   );
@@ -147,6 +149,7 @@ function TemplateField({ label, value, onChange, multiline, id }) {
             <TagPill
               key={p.tag}
               tag={p.tag}
+              title={p.help}
               onClick={() => insert(p.tag)}
             />
           ))}
@@ -161,6 +164,7 @@ function TemplateField({ label, value, onChange, multiline, id }) {
 function SpreadsheetTable({ rows, setRows }) {
   const [sel, setSel] = useState(null);
   const tableRef = useRef(null);
+  const allEmpty = useMemo(() => rows.every(isEmpty), [rows]);
 
   const updateCell = useCallback(
     (ri, key, val) => {
@@ -230,13 +234,35 @@ function SpreadsheetTable({ rows, setRows }) {
         border: "1px solid var(--rule)",
         borderRadius: 8,
         background: "var(--card)",
+        position: "relative",
       }}
     >
+      {allEmpty && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2,
+            pointerEvents: "none",
+            background: "var(--card)",
+            opacity: 0.55,
+            borderRadius: 8,
+          }}
+        >
+          <span style={{ fontSize: 36, marginBottom: 8, animation: "bounce 1.5s ease-in-out infinite" }}>📋</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--fg)" }}>Collez vos données depuis Excel</span>
+          <span style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>Ctrl+V / ⌘V dans la première cellule</span>
+        </div>
+      )}
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
-          tableLayout: "fixed",
+          tableLayout: "auto",
           minWidth: 540,
         }}
       >
@@ -274,7 +300,7 @@ function SpreadsheetTable({ rows, setRows }) {
                   )}
                 </td>
                 {COLS.map((col, ci) => (
-                  <td key={col.key} style={tdStyle}>
+                  <td key={col.key} style={{ ...tdStyle, maxWidth: col.key === 'email' ? 250 : undefined }}>
                     <input
                       data-r={ri}
                       data-c={ci}
@@ -284,8 +310,12 @@ function SpreadsheetTable({ rows, setRows }) {
                       onFocus={() => setSel({ r: ri, c: ci })}
                       onKeyDown={(e) => handleKeyDown(e, ri, ci)}
                       placeholder={col.key === "genre" ? "M/F" : ""}
+                      title={col.key === 'email' ? row[col.key] : undefined}
                       style={{
                         ...cellInput,
+                        textOverflow: col.key === 'email' ? 'ellipsis' : undefined,
+                        overflow: col.key === 'email' ? 'hidden' : undefined,
+                        whiteSpace: col.key === 'email' ? 'nowrap' : undefined,
                         textAlign:
                           col.key === "note" || col.key === "genre"
                             ? "center"
@@ -341,7 +371,7 @@ function ConfirmModal({ missing, onConfirm, onCancel }) {
             color: "var(--warn-fg)",
           }}
         >
-          ⚠ {missing.length} étudiant{missing.length > 1 ? "s" : ""} sans note
+          ⚠ {missing.length} étudiant·es{missing.length > 1 ? "s" : ""} sans note
         </div>
         <div style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>
           Voulez-vous les inclure dans l'envoi ?
@@ -535,6 +565,11 @@ export default function App() {
 
   const withEmail = useMemo(() => rows.filter(hasEmail), [rows]);
   const complete = useMemo(() => withEmail.filter(hasNote), [withEmail]);
+  const average = useMemo(() => {
+    const notes = complete.map((r) => parseFloat(r.note)).filter((n) => !isNaN(n));
+    if (notes.length === 0) return null;
+    return (notes.reduce((a, b) => a + b, 0) / notes.length).toFixed(2);
+  }, [complete]);
   const missingNote = useMemo(
     () => withEmail.filter((r) => !hasNote(r)),
     [withEmail]
@@ -588,16 +623,21 @@ export default function App() {
 
   const theme = dark ? darkTheme : lightTheme;
 
+  useEffect(() => {
+    document.body.style.background = dark ? darkTheme['--bg'] : lightTheme['--bg'];
+  }, [dark]);
+
   return (
     <div style={{ ...rootBase, ...theme }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;600;700&display=swap');
-        * { box-sizing: border-box; }
-        body { background: var(--bg, #f6f7f8); }
+        * { box-sizing: border-box; transition: background .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease; }
+        body { background: var(--bg, #f6f7f8); transition: background .3s ease; }
         input::placeholder, textarea::placeholder { color: var(--muted); opacity: .5; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
         @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
       `}</style>
 
       {showConfirm && (
@@ -607,6 +647,36 @@ export default function App() {
           onCancel={() => setShowConfirm(false)}
         />
       )}
+
+      {/* floating theme toggle */}
+      <button
+        onClick={toggleDark}
+        title={dark ? "Mode clair" : "Mode sombre"}
+        style={{
+          position: "fixed",
+          top: 20,
+          right: 20,
+          zIndex: 50,
+          background: "var(--card)",
+          border: "1px solid var(--rule)",
+          borderRadius: "50%",
+          width: 40,
+          height: 40,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--muted)",
+          boxShadow: "0 2px 10px rgba(0,0,0,.15)",
+          transition: "color .15s, background .15s",
+        }}
+      >
+        {dark ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        )}
+      </button>
 
       {/* header */}
       <div
@@ -634,32 +704,11 @@ export default function App() {
             Coller · Vérifier · Envoyer
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button
-            onClick={toggleDark}
-            title={dark ? "Mode clair" : "Mode sombre"}
-            style={{
-              background: "none",
-              border: "1px solid var(--rule)",
-              borderRadius: 6,
-              width: 32,
-              height: 32,
-              cursor: "pointer",
-              fontSize: 16,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--fg)",
-            }}
-          >
-            {dark ? "☀" : "☽"}
-          </button>
-          <img
-            src={dark ? LOGO_WHITE : LOGO_BLACK}
-            alt="ISC"
-            style={{ height: 32, opacity: 0.85 }}
-          />
-        </div>
+        <img
+          src={dark ? LOGO_WHITE : LOGO_BLACK}
+          alt="ISC"
+          style={{ height: 32, opacity: 0.85 }}
+        />
       </div>
 
       {view === "edit" ? (
@@ -730,7 +779,7 @@ export default function App() {
             )}
           </div>
 
-          <details style={{ marginBottom: 20 }}>
+          <details open style={{ marginBottom: 20 }}>
             <summary
               style={{
                 cursor: "pointer",
@@ -809,6 +858,11 @@ export default function App() {
             </button>
             <span style={{ fontSize: 12, color: "var(--muted)" }}>
               {complete.length} complet{complete.length > 1 ? "s" : ""}
+              {average !== null && (
+                <>
+                  {" "}· moy. <b style={{ color: "var(--fg)" }}>{average}</b>
+                </>
+              )}
               {missingNote.length > 0 && (
                 <>
                   ,{" "}
@@ -919,6 +973,10 @@ export default function App() {
           ♥
         </span>{" "}
         — ISC 2026
+        <br />
+        <span style={{ fontSize: 10, opacity: 0.6 }}>
+          v54a3a5e · 30.03.2026
+        </span>
       </div>
     </div>
   );
@@ -945,23 +1003,23 @@ const lightTheme = {
   "--tag-border": "#d5dbe6",
 };
 const darkTheme = {
-  "--fg": "#e4e6ea",
-  "--muted": "#8b8f96",
-  "--rule": "#33363b",
-  "--bg": "#18191c",
-  "--card": "#222326",
-  "--accent": "#4d90f0",
-  "--badge-bg": "#2a3448",
-  "--badge-fg": "#7eadf0",
-  "--sent-bg": "#1e3329",
-  "--sent-fg": "#5ee09c",
-  "--valid-bg": "#1d2230",
-  "--warn-bg": "#33281a",
-  "--warn-fg": "#e89a3c",
-  "--preview-bg": "#1e1f22",
-  "--tag-bg": "#2a2d33",
-  "--tag-fg": "#7eadf0",
-  "--tag-border": "#3a3e46",
+  "--fg": "#d1d5db",
+  "--muted": "#6b7280",
+  "--rule": "#374151",
+  "--bg": "#111827",
+  "--card": "#1f2937",
+  "--accent": "#60a5fa",
+  "--badge-bg": "#1e3a5f",
+  "--badge-fg": "#93c5fd",
+  "--sent-bg": "#064e3b",
+  "--sent-fg": "#6ee7b7",
+  "--valid-bg": "#172554",
+  "--warn-bg": "#451a03",
+  "--warn-fg": "#fbbf24",
+  "--preview-bg": "#1e293b",
+  "--tag-bg": "#1e3a5f",
+  "--tag-fg": "#93c5fd",
+  "--tag-border": "#374151",
 };
 const rootBase = {
   "--mono": "'JetBrains Mono','Fira Code',monospace",
@@ -969,7 +1027,7 @@ const rootBase = {
   fontFamily: "var(--body)",
   color: "var(--fg)",
   background: "var(--bg)",
-  maxWidth: 760,
+  maxWidth: "90%",
   margin: "0 auto",
   padding: "24px 18px",
   minHeight: "100vh",
