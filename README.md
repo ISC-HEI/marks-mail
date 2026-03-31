@@ -5,7 +5,7 @@
 [![Deployed](https://img.shields.io/github/deployments/ISC-HEI/marks-mail/github-pages?label=deployment&color=blue)](https://isc-hei.github.io/marks-mail/)
 ![License](https://img.shields.io/badge/license-GPL--3.0-brightgreen)
 
-## 👉 [Use the application](https://isc-hei.github.io/marks-mail/)
+## 👉 [Use the application](https://marks-mail.isc-vs.ch)
 
 # ISC Grade Mailer
 
