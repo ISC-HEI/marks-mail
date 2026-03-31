@@ -14,7 +14,6 @@ Internal tool for sending individual grades to students by email, using your own
 ## Quick Start
 
 ```bash
-chmod +x dev.sh
 ./dev.sh
 ```
 
@@ -39,9 +38,12 @@ Then open http://localhost:5173
 ## GitHub Pages Deployment
 
 1. In `vite.config.js`, set `base`:
+
    ```js
    base: '/repo-name/'
    ```
+
+   :point_up: base must be './' if using a custom domain.
 
 2. Deploy:
    ```bash
