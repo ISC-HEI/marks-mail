@@ -1,6 +1,7 @@
-<p align="right">
-  <img src="https://github.com/ISC-HEI/isc_logos/blob/ab8c41c12930c787f590183baa229a22709c81f9/black/ISC%20Logo%20inline%20black%20v3%20-%20large.webp?raw=true" align="right" alt="ISC Logo" height="50"/>
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ISC-HEI/isc-logos/main/white/ISC%20Logo%20inline%20white%20v3%20-%20large.webp">
+  <img align="right" src="https://raw.githubusercontent.com/ISC-HEI/isc-logos/main/black/ISC%20Logo%20inline%20black%20v3%20-%20large.webp" alt="ISC Logo" height="50"/>
+</picture>
 
 [![Deployed](https://img.shields.io/github/deployments/ISC-HEI/marks-mail/github-pages?label=deployment&color=blue)](https://isc-hei.github.io/marks-mail/)
 ![License](https://img.shields.io/badge/license-GPL--3.0-brightgreen)
